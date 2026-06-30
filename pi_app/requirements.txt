@@ -1,0 +1,15 @@
+# Raspberry Pi 4 (64-bit Raspberry Pi OS) runtime dependencies.
+#
+# Install ONNX Runtime from the ARM64 wheel (CPU only):
+#   pip install onnxruntime
+# If a prebuilt wheel is unavailable for your Python, use the piwheels index:
+#   pip install --index-url https://www.piwheels.org/simple onnxruntime
+
+numpy>=1.24
+onnxruntime>=1.16        # CPU inference (ARM64 build on the Pi)
+sounddevice>=0.4.6       # live capture from the UMA-8 v2 (needs libportaudio2)
+soundfile>=0.12          # offline WAV mode (--file); needs libsndfile1
+librosa>=0.10            # only used by offline --file mode for resampling
+
+# System packages required by sounddevice / soundfile on Raspberry Pi OS:
+#   sudo apt install libportaudio2 libsndfile1

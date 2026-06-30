@@ -1,0 +1,8 @@
+{
+  "center": 0,
+  "periph": [1, 2, 3, 4, 5, 6],
+  "handed": -1,
+  "rot": 277.0,
+  "mean_error_deg": 4.0,
+  "note": "Calibrated from 4 known-angle captures (0/90/180/270 deg). Mean error 4 deg. rot is applied as an output offset added to the raw SRP-PHAT azimuth."
+}

@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environment
+.venv/
+venv/
+
+# Training data and checkpoints
+data/
+training/checkpoints/
+training/runs/
+training/wandb/
+training/exported/*.pt
+training/exported/archive/
+training/exported/loss_curves.png
+
+# Docs and presentations
+docs/
+*.pdf
+*.pptx
+~$*
+media-*/
+GHID_*.md
+GHID_*.pdf
+ARCHITECTURE.md
+PROMPT_*.md
+make_presentation.py
+
+# Temp / scratch
+*.wav
+*.log
+scratchpad/
+para_debug.txt
+
+# Claude
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Root level docs
+README.md
+requirements-*.txt
