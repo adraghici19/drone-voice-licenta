@@ -462,7 +462,7 @@ def _pipeline(cfg, device):
             kw                = detector.update(kws, now=time.monotonic())
 
             az = None
-            if vad_active:
+            if kw:
                 mic6   = raw[_ACTIVE_MICS]
                 az, _  = doa.estimate(mic6)
 
@@ -471,7 +471,8 @@ def _pipeline(cfg, device):
             with _lock:
                 _state["vad"]       = vad_active
                 _state["scores"]    = scores
-                _state["direction"] = round(az, 1) if az is not None else None
+                if az is not None:
+                    _state["direction"] = round(az, 1)
 
                 if kw:
                     ts  = time.strftime("%H:%M:%S")

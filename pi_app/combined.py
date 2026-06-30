@@ -54,7 +54,7 @@ def run(cfg, device):
             kw = detector.update(kws, now=time.monotonic())
 
             az = None
-            if vad_active or kw:
+            if kw:
                 mic6 = raw[_ACTIVE_MICS]
                 az, _ = doa.estimate(mic6)
 
