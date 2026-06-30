@@ -33,6 +33,7 @@ def run(cfg, device):
     print("{:<10} {:<40} {:<12} {}".format("VAD", "KWS scores", "direction", "event"))
     print("-" * 75)
 
+    proc_sum = 0.0; proc_n = 0; behind = 0
     with MicArrayStream(cfg, device=device) as stream:
         while not stream.has_window():
             time.sleep(0.01)
@@ -65,7 +66,16 @@ def run(cfg, device):
             event = ">>> {:s} <<<".format(kw.upper()) if kw else ""
             print("[{:s}] {:s}  {:s}  {:s}".format(flag, scores, doa_str, event))
 
-            sleep = hop_period - (time.monotonic() - t0)
+            proc = time.monotonic() - t0
+            proc_sum += proc; proc_n += 1
+            if proc > hop_period:
+                behind += 1
+            if proc_n >= 30:
+                print("[timing] proc mean={:.0f} ms  budget={:.0f} ms  behind {}/{}".format(
+                    1000 * proc_sum / proc_n, 1000 * hop_period, behind, proc_n))
+                proc_sum = 0.0; proc_n = 0; behind = 0
+
+            sleep = hop_period - proc
             if sleep > 0:
                 time.sleep(sleep)
 
@@ -74,11 +84,14 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--device", type=int, default=None)
     ap.add_argument("--fp32", action="store_true")
+    ap.add_argument("--int8", action="store_true")
     ap.add_argument("--threshold", type=float, default=0.50)
     args = ap.parse_args()
 
     cfg = PI_CFG
     cfg.kws_threshold = args.threshold
+    if args.int8:
+        cfg.use_int8 = True
     if args.fp32:
         cfg.use_int8 = False
 
