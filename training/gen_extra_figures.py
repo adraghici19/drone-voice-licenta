@@ -18,7 +18,7 @@ os.makedirs(FIG, exist_ok=True)
 
 from shared.array_geometry import MIC_POSITIONS, ARRAY_RADIUS_M, SPEED_OF_SOUND_MS
 
-# ───────────────────────────── 1. Array geometry ─────────────────────────────
+# 1. Array geometry
 def fig_geometry():
     R = ARRAY_RADIUS_M * 100.0  # cm
     # Peripheral-mic angles matching the real UMA-8 v2 silkscreen:
@@ -56,7 +56,7 @@ def fig_geometry():
     plt.savefig(os.path.join(FIG, 'array_geometry.png'), dpi=140); plt.close()
     print('saved array_geometry.png')
 
-# ───────────────────────── 2. Delay-and-sum beam pattern ──────────────────────
+# 2. Delay-and-sum beam pattern
 def fig_beampattern():
     peri = MIC_POSITIONS[1:7]                 # 6 peripheral mics
     c = SPEED_OF_SOUND_MS
@@ -83,7 +83,7 @@ def fig_beampattern():
     plt.savefig(os.path.join(FIG, 'beam_pattern.png'), dpi=140); plt.close()
     print('saved beam_pattern.png')
 
-# ──────────────────────── 3. LiteVoiceNet architecture ────────────────────────
+# 3. LiteVoiceNet architecture
 def _box(ax, x, y, w, h, text, fc):
     ax.add_patch(FancyBboxPatch((x, y), w, h, boxstyle='round,pad=0.02,rounding_size=0.04',
                                 fc=fc, ec='k', lw=1.1))
@@ -126,7 +126,7 @@ def fig_arch():
     plt.savefig(os.path.join(FIG, 'litevoicenet_arch.png'), dpi=150); plt.close()
     print('saved litevoicenet_arch.png')
 
-# ──────────────────────── 4. 5-channel feature example ────────────────────────
+# 4. 5-channel feature example
 def fig_features():
     from config import CFG
     from data import SyntheticAudioDataset

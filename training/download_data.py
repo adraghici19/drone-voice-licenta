@@ -37,7 +37,7 @@ from pathlib import Path
 
 import numpy as np
 
-# ── Config ────────────────────────────────────────────────────────────────────
+# Config
 
 LIBRI_BASE_URL = "https://www.openslr.org/resources/12/"
 LIBRI_ARCHIVES = {
@@ -73,7 +73,7 @@ BG_SC_MULTIPLIER   = 2   # non-stop Speech Commands words: 2× stop count
 BG_LIBRI_EXTRA     = 500  # additional LibriSpeech background on top of SC bg
 
 
-# ── Progress bar ──────────────────────────────────────────────────────────────
+# Progress bar
 
 def _progress(block_num, block_size, total_size):
     downloaded = block_num * block_size
@@ -88,7 +88,7 @@ def _progress(block_num, block_size, total_size):
         sys.stdout.flush()
 
 
-# ── Download + extract ────────────────────────────────────────────────────────
+# Download + extract
 
 def download_file(url: str, dest_path: Path, size_mb: int):
     if dest_path.exists():
@@ -117,7 +117,7 @@ def extract_archive(tar_path: Path, dest_dir: Path):
     print("  Done in {:.1f} s".format(time.time() - t0))
 
 
-# ── LibriSpeech helpers ───────────────────────────────────────────────────────
+# LibriSpeech helpers
 
 def classify_libri(transcript: str) -> int:
     t = transcript.lower()
@@ -180,7 +180,7 @@ def scan_librispeech(libri_root: Path, keyword_max_duration: float = None):
     return items
 
 
-# ── Google Speech Commands helpers ───────────────────────────────────────────
+# Google Speech Commands helpers
 
 def scan_speech_commands(sc_root: Path, split: str = 'train'):
     """
@@ -234,7 +234,7 @@ def scan_speech_commands(sc_root: Path, split: str = 'train'):
     return items
 
 
-# ── Manifest creation ─────────────────────────────────────────────────────────
+# Manifest creation
 
 def build_hybrid_manifests(libri_train, libri_val, sc_train, sc_val):
     """
@@ -246,7 +246,7 @@ def build_hybrid_manifests(libri_train, libri_val, sc_train, sc_val):
     """
     rng = np.random.default_rng(42)
 
-    # ── Separate by class ─────────────────────────────────────────────────────
+    # Separate by class
     def by_class(items):
         d = {i: [] for i in range(4)}
         for it in items:
@@ -258,7 +258,7 @@ def build_hybrid_manifests(libri_train, libri_val, sc_train, sc_val):
     vl = by_class(libri_val)
     sv = by_class(sc_val)
 
-    # ── Train assembly ────────────────────────────────────────────────────────
+    # Train assembly
     # Stop: from Speech Commands only (perfect quality)
     stop_train = sc[2]
     rng.shuffle(stop_train)
@@ -280,13 +280,13 @@ def build_hybrid_manifests(libri_train, libri_val, sc_train, sc_val):
     train_items = help_tr + help_me_tr + stop_train + bg_train
     rng.shuffle(train_items)
 
-    # ── Val assembly ──────────────────────────────────────────────────────────
+    # Val assembly
     # All LibriSpeech dev-clean + Speech Commands val stop + SC val bg
     sc_stop_val = sv[2]
     sc_bg_val   = sv[3][:len(sc_stop_val) * 2]  # 2× stop count
     val_items   = libri_val + sc_stop_val + sc_bg_val
 
-    # ── Print distribution ────────────────────────────────────────────────────
+    # Print distribution
     print("\n  Train distribution:")
     tr_counts = Counter(i['kws_label'] for i in train_items)
     for lbl, name in enumerate(KWS_CLASSES):
@@ -310,7 +310,7 @@ def write_manifest(items, path: Path):
     print("  Written {} rows -> {}".format(len(items), path))
 
 
-# ── Status check ─────────────────────────────────────────────────────────────
+# Status check
 
 def check_status(libri_dir, sc_dir, manifest_dir):
     print("=== Status ===")
@@ -334,7 +334,7 @@ def check_status(libri_dir, sc_dir, manifest_dir):
             print("  manifests/{}.csv    NOT FOUND".format(split))
 
 
-# ── Main ──────────────────────────────────────────────────────────────────────
+# Main
 
 def main():
     parser = argparse.ArgumentParser(
@@ -357,7 +357,7 @@ def main():
         check_status(libri_dir, sc_dir, manifest_dir)
         return
 
-    # ── Download LibriSpeech ──────────────────────────────────────────────────
+    # Download LibriSpeech
     print("=" * 60)
     print("Step 1/3 — LibriSpeech")
     print("=" * 60)
@@ -368,7 +368,7 @@ def main():
         download_file(LIBRI_BASE_URL + filename, tar_path, size)
         extract_archive(tar_path, libri_dir)
 
-    # ── Download Speech Commands ──────────────────────────────────────────────
+    # Download Speech Commands
     use_sc = not args.dev_only
     if use_sc:
         print("\n" + "=" * 60)
@@ -379,7 +379,7 @@ def main():
         # Archive extracts flat — word dirs land directly in data_dir
         extract_archive(sc_tar, data_dir)
 
-    # ── Scan LibriSpeech ──────────────────────────────────────────────────────
+    # Scan LibriSpeech
     print("\n" + "=" * 60)
     print("Step 3/3 — Scanning & building manifests")
     print("=" * 60)
@@ -409,7 +409,7 @@ def main():
         libri_val_items = []
     print("  Total: {}".format(len(libri_val_items)))
 
-    # ── Scan Speech Commands ──────────────────────────────────────────────────
+    # Scan Speech Commands
     sc_train_items = []
     sc_val_items   = []
 
@@ -432,7 +432,7 @@ def main():
             sc_val_items = scan_speech_commands(sc_dir, split='val')
             print("  Total: {}".format(len(sc_val_items)))
 
-    # ── Build manifests ───────────────────────────────────────────────────────
+    # Build manifests
     print("\n[Building manifests]")
 
     if use_sc and sc_train_items and sc_val_items:

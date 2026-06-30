@@ -58,7 +58,7 @@ def main():
     rms = np.sqrt(np.mean(rec[:, :7] ** 2, axis=0) + 1e-12)
     print("per-channel RMS (ch0-6):", "  ".join("{:.4f}".format(r) for r in rms))
 
-    # ── model: VAD + KWS over sliding windows ────────────────────────────────
+    # model: VAD + KWS over sliding windows
     rows = max({cfg.ref_mic} | {m for p in cfg.mic_pairs for m in p}) + 1
     mics = np.stack([rec[:, cfg.first_mic_channel + i] for i in range(rows)])
     net = LiteVoiceNetONNX(cfg)
@@ -81,7 +81,7 @@ def main():
     print("KWS class: {}  ({:.0f}%)".format(cfg.kws_classes[top], kws_mean[top] * 100))
     print("  all:", {cfg.kws_classes[i]: round(float(kws_mean[i]), 2) for i in range(len(cfg.kws_classes))})
 
-    # ── DoA ──────────────────────────────────────────────────────────────────
+    # DoA
     doa = SrpPhatDoA(cfg.sample_rate, n_fft=1024, mic_xy=hex_mic_positions(), grid_deg=3.0)
     az, srp = doa.estimate(np.stack([rec[:, i] for i in range(6)]))
     if az is not None:

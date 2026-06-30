@@ -17,7 +17,7 @@ os.makedirs(FIG, exist_ok=True)
 TBL = os.path.normpath(os.path.join(HERE, "..", "docs", "thesis", "generated_tables.tex"))
 cfg = PI_CFG
 
-# ── DoA figure + table ───────────────────────────────────────────────────────
+# DoA figure + table
 calib = json.load(open(os.path.join(HERE, "doa_calib.json")))
 caps = {}
 for f in sorted(glob.glob(os.path.join(HERE, "doa_captures", "angle_*.wav"))):
@@ -51,7 +51,7 @@ plt.tight_layout()
 plt.savefig(os.path.join(FIG, "doa_results.png"), dpi=130, bbox_inches="tight"); plt.close()
 print("saved doa_results.png")
 
-# ── per-channel array levels ─────────────────────────────────────────────────
+# per-channel array levels
 rms = np.sqrt(np.mean(caps[0.0] ** 2, axis=1))
 plt.figure(figsize=(7, 3.2))
 plt.bar(range(7), rms * 1000, color="tab:purple")
@@ -61,7 +61,7 @@ plt.xticks(range(7)); plt.tight_layout()
 plt.savefig(os.path.join(FIG, "array_levels.png"), dpi=130); plt.close()
 print("saved array_levels.png")
 
-# ── tables ───────────────────────────────────────────────────────────────────
+# tables
 import pandas as pd
 MAN = os.path.normpath(os.path.join(HERE, "..", "training", "data", "manifests"))
 names = ["help", "stop", "speech", "noise"]

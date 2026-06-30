@@ -44,7 +44,7 @@ if not clips:
 
 print(f"Gasit {len(clips)} clipuri originale in {SPEECH_DIR}")
 
-# ── Augmentare ────────────────────────────────────────────────────────────────
+# Augmentare
 PITCH_STEPS = [-3.0, -1.5, 0.0, +1.5, +3.0]
 aug_paths   = []
 
@@ -72,7 +72,7 @@ for fpath in clips:
 
 print(f"Augmentate: {len(aug_paths)} clipuri in {AUG_DIR}")
 
-# ── Construieste randuri noi ───────────────────────────────────────────────────
+# Construieste randuri noi
 random.seed(RANDOM_SEED)
 random.shuffle(aug_paths)
 split = int(len(aug_paths) * TRAIN_FRAC)
@@ -93,7 +93,7 @@ def make_rows(paths, label):
 new_train_rows = make_rows(train_new, KWS_LABEL)
 new_val_rows   = make_rows(val_new,   KWS_LABEL)
 
-# ── Incarca si injecteaza in manifeste ────────────────────────────────────────
+# Incarca si injecteaza in manifeste
 tr = pd.read_csv(TRAIN_CSV)
 va = pd.read_csv(VAL_CSV)
 
@@ -107,7 +107,7 @@ va = pd.concat([va, pd.DataFrame(new_val_rows)],   ignore_index=True)
 tr.to_csv(TRAIN_CSV, index=False)
 va.to_csv(VAL_CSV,   index=False)
 
-# ── Raport ────────────────────────────────────────────────────────────────────
+# Raport
 print("\n=== Distributie finala ===")
 for csv_name, df in [("TRAIN", tr), ("VAL", va)]:
     print(f"\n{csv_name}:")

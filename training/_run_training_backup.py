@@ -22,7 +22,7 @@ from data import build_datasets
 from losses import build_loss
 import export as exp_mod
 
-# ── Env check ─────────────────────────────────────────────────────────────────
+# Env check
 print("=" * 60)
 print("LiteVoiceNet — full training run")
 print("=" * 60)
@@ -34,7 +34,7 @@ print("GPU     :", gpu.name)
 print("VRAM    : {:.1f} GB".format(gpu.total_memory / 1e9))
 device = torch.device('cuda')
 
-# ── Dataset ───────────────────────────────────────────────────────────────────
+# Dataset
 torch.manual_seed(CFG.train.seed)
 np.random.seed(CFG.train.seed)
 train_ds, val_ds = build_datasets(CFG)
@@ -56,13 +56,13 @@ if os.path.exists(test_csv):
 print("\nTrain : {} samples  ({} batches)".format(len(train_ds), len(train_loader)))
 print("Val   : {} samples  ({} batches)".format(len(val_ds),   len(val_loader)))
 
-# ── Model ─────────────────────────────────────────────────────────────────────
+# Model
 model = build_model(CFG).to(device)
 n_params = sum(p.numel() for p in model.parameters())
 assert n_params < 1_500_000, "Exceeds 1.5 M budget: {:,}".format(n_params)
 print("\nParams  : {:,}  ({:.1f}% of 1.5 M budget)".format(n_params, n_params / 1_500_000 * 100))
 
-# ── KWS class weights (inverse-frequency, only when using real manifests) ────
+# KWS class weights (inverse-frequency, only when using real manifests)
 kws_weight = None
 if hasattr(train_ds, 'df'):
     from collections import Counter
@@ -78,7 +78,7 @@ if hasattr(train_ds, 'df'):
     print("KWS class weights:", ["{}={:.2f}".format(CFG.model.kws_classes[i], kws_weight[i].item())
                                   for i in range(n_cls)])
 
-# ── Training setup ────────────────────────────────────────────────────────────
+# Training setup
 criterion = build_loss(CFG, kws_weight=kws_weight)
 optimizer = torch.optim.Adam(model.parameters(), lr=CFG.train.learning_rate,
                              weight_decay=CFG.train.weight_decay)
@@ -101,7 +101,7 @@ print("\n{:<8} {:<12} {:<8} {:<8} {:<8}  {:<12} {:<8} {:<8} {:<8}  {:>6}".format
     "Epoch", "Train", "Mask", "VAD", "KWS", "Val", "Mask", "VAD", "KWS", "Time"))
 print("-" * 95)
 
-# ── Training loop ─────────────────────────────────────────────────────────────
+# Training loop
 for epoch in range(1, EPOCHS + 1):
     model.train()
     t_tot = t_mask = t_vad = t_kws = 0.0; n_tr = 0
@@ -133,7 +133,7 @@ for epoch in range(1, EPOCHS + 1):
             v_tot += loss.item(); v_mask += bd['mask']
             v_vad += bd['vad'];   v_kws  += bd['kws']; n_val += 1
 
-    # ── keep the best-generalising model (lowest val_total) ──────────────────
+    # keep the best-generalising model (lowest val_total)
     if v_tot / n_val < best_val:
         best_val   = v_tot / n_val
         best_epoch = epoch
@@ -157,7 +157,7 @@ total_time = time.time() - t_start
 print("-" * 95)
 print("Training complete in {:.1f} s  ({:.1f} s/epoch)".format(total_time, total_time / EPOCHS))
 
-# ── Restore best-val checkpoint (already persisted to disk during training) ───
+# Restore best-val checkpoint (already persisted to disk during training)
 if best_state is not None:
     model.load_state_dict(best_state)
     print("Restored best model from epoch {} (val_total={:.4f}); checkpoint at {}".format(
@@ -180,7 +180,7 @@ with torch.no_grad():
         all_kws_true_final.extend(kws_tgt.tolist())
 calib_features = np.concatenate(calib_features, axis=0) if calib_features else None
 
-# ── Per-class KWS accuracy ────────────────────────────────────────────────────
+# Per-class KWS accuracy
 if all_kws_pred_final:
     from collections import Counter
     correct_cls = Counter()
@@ -196,7 +196,7 @@ if all_kws_pred_final:
         c = correct_cls.get(i, 0)
         print("  {:12s} {:4d}/{:4d}  = {:6.1f}%".format(name, c, n, 100 * c / n if n else 0.0))
 
-# ── HELD-OUT TEST accuracy (speaker-disjoint) — the honest headline number ────
+# HELD-OUT TEST accuracy (speaker-disjoint) — the honest headline number
 if test_loader is not None:
     from collections import Counter
     t_pred, t_true = [], []
@@ -225,7 +225,7 @@ if test_loader is not None:
     print("VAD frame accuracy on test = {:.1f}%".format(100 * t_vad_correct / max(t_vad_total, 1)))
     print("=" * 60)
 
-# ── Save loss curve PNG ────────────────────────────────────────────────────────
+# Save loss curve PNG
 os.makedirs(CFG.export_dir, exist_ok=True)
 fig, axes = plt.subplots(1, 4, figsize=(18, 3.5))
 for ax, task in zip(axes, ['total', 'mask', 'vad', 'kws']):
@@ -241,7 +241,7 @@ plt.savefig(curve_path, dpi=120, bbox_inches='tight')
 plt.close()
 print("Loss curve saved -> {}".format(curve_path))
 
-# ── ONNX export ───────────────────────────────────────────────────────────────
+# ONNX export
 print("\n=== ONNX export ===")
 model_cpu = model.cpu().eval()
 onnx_path = os.path.join(CFG.export_dir, 'litevoicenet.onnx')
@@ -261,13 +261,13 @@ outs   = sess.run(None, {'features': x_test, 'h_in': hx_t})
 print("ORT sanity check OK  mask={} vad={} kws={}".format(
     outs[0].shape, outs[1].shape, outs[2].shape))
 
-# ── ONNX INT8 quantisation ────────────────────────────────────────────────────
+# ONNX INT8 quantisation
 print("\n=== INT8 quantisation ===")
 int8_path = os.path.join(CFG.export_dir, 'litevoicenet_int8.onnx')
 ok = exp_mod.quantize_onnx_int8(onnx_path, output_path=int8_path,
                                   cfg=CFG, calib_features=calib_features)
 
-# ── CPU latency benchmark ─────────────────────────────────────────────────────
+# CPU latency benchmark
 print("\n=== CPU latency benchmark (1 thread, simulates Pi 4) ===")
 chunk_ms = CFG.synth.seq_frames * CFG.signal.hop_size / CFG.signal.sample_rate_raw * 1000
 print("Audio chunk size: {:.2f} ms".format(chunk_ms))
@@ -282,7 +282,7 @@ if ok:
     print("INT8  mean={:.2f} ms  p95={:.2f} ms  speedup={:.2f}x".format(
         stats8['mean_ms'], stats8['p95_ms'], speedup))
 
-# ── Summary ───────────────────────────────────────────────────────────────────
+# Summary
 print("\n=== Export summary ===")
 for name, path in [('ONNX FP32', onnx_path), ('ONNX INT8', int8_path)]:
     if os.path.exists(path):

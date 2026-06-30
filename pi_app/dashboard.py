@@ -19,7 +19,7 @@ from doa import SrpPhatDoA, hex_mic_positions
 
 _ACTIVE_MICS = [0, 1, 2, 3, 4, 6]
 
-# ── shared state (written by audio thread, read by Flask) ─────────────────────
+# shared state (written by audio thread, read by Flask)
 _state = {
     "vad": False,
     "scores": {"help": 0.0, "stop": 0.0, "speech": 0.0, "noise": 1.0},
@@ -32,7 +32,7 @@ _state = {
 }
 _lock = threading.Lock()
 
-# ── Flask app ──────────────────────────────────────────────────────────────────
+# Flask app
 app = Flask(__name__)
 
 HTML = r"""<!DOCTYPE html>
@@ -408,7 +408,7 @@ def api_state():
         return jsonify(dict(_state))
 
 
-# ── Audio + inference loop (background thread) ────────────────────────────────
+# Audio + inference loop (background thread)
 def _pipeline(cfg, device):
     try:
         from audio import MicArrayStream, find_uma8
@@ -491,7 +491,7 @@ def _pipeline(cfg, device):
                 time.sleep(sleep)
 
 
-# ── Entry point ───────────────────────────────────────────────────────────────
+# Entry point
 def main():
     ap = argparse.ArgumentParser(description="LiteVoiceNet web dashboard")
     ap.add_argument("--device",    type=int,   default=None)

@@ -27,14 +27,14 @@ from data import build_datasets, ManifestDataset
 from losses import build_loss
 import export as exp_mod
 
-# ── Fine-tune settings ────────────────────────────────────────────────────────
+# Fine-tune settings
 FINETUNE_EPOCHS = 12
 LR              = 1.5e-4   # ~4x lower than original 6e-4
 BATCH           = 64
 CKPT_IN         = os.path.join(CFG.export_dir, "litevoicenet_best.pt")
 CKPT_OUT        = os.path.join(CFG.export_dir, "litevoicenet_best.pt")
 
-# ── Setup ─────────────────────────────────────────────────────────────────────
+# Setup
 print("=" * 60)
 print("LiteVoiceNet  —  fine-tune on new 'help' recordings")
 print("=" * 60)
@@ -49,14 +49,14 @@ if device.type == "cuda":
 torch.manual_seed(42)
 np.random.seed(42)
 
-# ── Data ──────────────────────────────────────────────────────────────────────
+# Data
 train_ds, val_ds = build_datasets(CFG)
 train_loader = DataLoader(train_ds, batch_size=BATCH, shuffle=True,  num_workers=0, pin_memory=(device.type=="cuda"))
 val_loader   = DataLoader(val_ds,   batch_size=BATCH, shuffle=False, num_workers=0, pin_memory=(device.type=="cuda"))
 print(f"Train  : {len(train_ds)} samples  ({len(train_loader)} batches)")
 print(f"Val    : {len(val_ds)} samples  ({len(val_loader)} batches)")
 
-# ── Model ─────────────────────────────────────────────────────────────────────
+# Model
 model = build_model(CFG).to(device)
 n_params = sum(p.numel() for p in model.parameters())
 print(f"Params : {n_params:,}")
@@ -70,7 +70,7 @@ if os.path.exists(CKPT_IN):
 else:
     print(f"[warn] No checkpoint at {CKPT_IN} — training from scratch")
 
-# ── Loss + Optimizer ──────────────────────────────────────────────────────────
+# Loss + Optimizer
 from collections import Counter
 counts  = Counter(train_ds.df["kws_label"].astype(int).tolist())
 n_total = len(train_ds)
@@ -87,7 +87,7 @@ criterion = build_loss(CFG, kws_weight=kws_weight)
 optimizer = torch.optim.Adam(model.parameters(), lr=LR, weight_decay=1e-4)
 scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=FINETUNE_EPOCHS, eta_min=LR/10)
 
-# ── Training loop ─────────────────────────────────────────────────────────────
+# Training loop
 def run_epoch(loader, train=True):
     model.train(train)
     tot_loss, kws_correct, kws_total = 0.0, 0, 0
@@ -143,7 +143,7 @@ for ep in range(1, FINETUNE_EPOCHS + 1):
 
 print(f"\nBest val KWS: {best_val_acc*100:.1f}%  ->  {CKPT_OUT}")
 
-# ── Loss curves ───────────────────────────────────────────────────────────────
+# Loss curves
 fig, axes = plt.subplots(1, 2, figsize=(10, 3))
 axes[0].plot(history["train_loss"], label="train"); axes[0].plot(history["val_loss"], label="val")
 axes[0].set_title("Loss"); axes[0].legend(); axes[0].set_xlabel("epoch")
@@ -155,7 +155,7 @@ out_fig = os.path.join(CFG.export_dir, "finetune_curves.png")
 fig.savefig(out_fig, dpi=100)
 print(f"Curves : {out_fig}")
 
-# ── Re-export ONNX ────────────────────────────────────────────────────────────
+# Re-export ONNX
 print("\nExporting ONNX ...")
 ckpt = torch.load(CKPT_OUT, map_location=device, weights_only=True)
 model.load_state_dict(ckpt["state_dict"])

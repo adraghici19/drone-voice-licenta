@@ -36,7 +36,7 @@ from doa import SrpPhatDoA, hex_mic_positions, C_SOUND, ARRAY_RADIUS
 CALIB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "doa_calib.json")
 
 
-# ── geometry for a given channel assignment ──────────────────────────────────
+# geometry for a given channel assignment
 
 def positions_for(periph_channels, handed=+1, rot_deg=0.0):
     """6 peripheral mics at 0,60,... (optionally mirrored/rotated). Returns (6,2)."""
@@ -45,7 +45,7 @@ def positions_for(periph_channels, handed=+1, rot_deg=0.0):
     return np.stack([ARRAY_RADIUS * np.cos(ang), ARRAY_RADIUS * np.sin(ang)], axis=1)
 
 
-# ── capture ──────────────────────────────────────────────────────────────────
+# capture
 
 def capture(device, seconds, cfg):
     import sounddevice as sd
@@ -58,7 +58,7 @@ def capture(device, seconds, cfg):
     return rec.T  # (channels, N)
 
 
-# ── SRP confidence ───────────────────────────────────────────────────────────
+# SRP confidence
 
 def srp_confidence(srp):
     srp = srp - srp.min()
@@ -78,7 +78,7 @@ def estimate_with(frames_7, periph_idx, center_idx, handed, rot, cfg):
     return (az + rot) % 360.0, srp
 
 
-# ── calibration: brute-force the mapping that matches a known angle ──────────
+# calibration: brute-force the mapping that matches a known angle
 
 def calibrate(frames_7, true_angle, live_channels, cfg):
     best = None
@@ -127,7 +127,7 @@ def main():
         print("Saved to {}. Now run:  python doa_live.py --device {}".format(CALIB_PATH, args.device or ""))
         return
 
-    # ── live mode ────────────────────────────────────────────────────────────
+    # live mode
     if os.path.exists(CALIB_PATH):
         c = json.load(open(CALIB_PATH))
         periph, handed, rot = c["periph"], c["handed"], c["rot"]
