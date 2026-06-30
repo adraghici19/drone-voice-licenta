@@ -41,7 +41,7 @@ class PiConfig:
 
     kws_ema_alpha: float = 0.35
     kws_threshold: float = 0.6
-    kws_class_thresholds: List[float] = field(default_factory=lambda: [0.45, 0.39, 0.45, 0.45])
+    kws_class_thresholds: List[float] = field(default_factory=lambda: [0.50, 0.39, 0.50, 0.50])
     refractory_s: float = 1.5
     kws_min_frames: int = 1
     vad_threshold: float = 0.5
