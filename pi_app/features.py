@@ -7,11 +7,11 @@ _EPS = 1e-9
 def stft(signal: np.ndarray, n_fft: int, hop: int) -> np.ndarray:
     window = np.hanning(n_fft)
     n_frames = (len(signal) - n_fft) // hop + 1
-    out = np.zeros((n_fft // 2 + 1, n_frames), dtype=np.complex64)
-    for i in range(n_frames):
-        frame = signal[i * hop : i * hop + n_fft] * window
-        out[:, i] = np.fft.rfft(frame)
-    return out
+    if n_frames <= 0:
+        return np.zeros((n_fft // 2 + 1, 0), dtype=np.complex64)
+    idx = np.arange(n_fft)[None, :] + hop * np.arange(n_frames)[:, None]
+    frames = signal[idx] * window
+    return np.fft.rfft(frames, axis=1).T.astype(np.complex64)
 
 
 def build_features(

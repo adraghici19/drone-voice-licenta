@@ -50,7 +50,7 @@ class PiConfig:
     onnx_int8: str = "../training/exported/litevoicenet_int8.onnx"
     use_int8: bool = False
 
-    intra_op_threads: int = 2
+    intra_op_threads: int = 4
 
 
 PI_CFG = PiConfig()
